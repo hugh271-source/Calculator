@@ -1,7 +1,7 @@
 // Calculator Tutorial.cpp : This file contains the 'main' function. Program execution begins and ends there.
 
 //Things to do: fix the arrangement of trig functions and log to be normal,
-//Add algorithms to work out exact values of Pi and E (will be fun)
+//Add algorithms to work out exact values of Pi and E
 
 #include <iostream>
 #include <string>
@@ -14,7 +14,7 @@
 using namespace std;
 
 //Tokeniser block
-vector<string> tokenize(const string& input)
+vector<string> tokenize(const string & input)
 {
     vector<string> tokens;
     string current;
@@ -94,13 +94,13 @@ int main()
     list<string> twonumber = { "+", "-", "*", "x", "/", "^", "%", "r", "l" };
 
     cout << "Its Morbin time, and then he morbed all over the place\n\n";
-    cout << "Normal maths. Add, subtract, multiply, divide, exponents, percents, roots, factorial, pi, e\n";
+    cout << "Normal maths. Add, subtract, multiply, divide, exponents, percents, roots, factorial, pi, e, and more\n";
     cout << "You can take the previous answer either by just typing the operation if its the first number, or by using n in the second\n\n";
     cout << "soz, but trig is backwards (sin(30) is 30s), and log2(8) is 2l8\n\n";
     cout << "Type \"end\" to quit\n\n";
 
     Calculator c;
-
+    
     while (true)
     {
         cin >> ws;
