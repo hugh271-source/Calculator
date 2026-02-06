@@ -24,6 +24,22 @@ vector<string> tokenize(const string & input)
         char c = input[i];
 
         if (isspace(c)) continue;
+        if (c == '-' && (i + 1 < input.size()) &&
+            (isdigit(input[i + 1]) || input[i + 1] == '.'))
+        {
+            current.clear();
+            current += c;
+            i++;
+
+            while (i < input.size() && (isdigit(input[i]) || input[i] == '.'))
+            {
+                current += input[i];
+                i++;
+            }
+            i--;
+            tokens.push_back(current);
+            continue;
+        }
 
         if (isdigit(c) || c == '.')
         {
@@ -95,7 +111,7 @@ int main()
 
     cout << "Its Morbin time, and then he morbed all over the place\n\n";
     cout << "Normal maths. Add, subtract, multiply, divide, exponents, percents, roots, factorial, pi, e, and more\n";
-    cout << "You can take the previous answer either by just typing the operation if its the first number, or by using n in the second\n\n";
+    cout << "You can take the previous answer either by typing the operation if its the first number, or by using n in the second\n\n";
     cout << "soz, but trig is backwards (sin(30) is 30s), and log2(8) is 2l8\n\n";
     cout << "Type \"end\" to quit\n\n";
 
@@ -237,9 +253,9 @@ int main()
         }
 
         //Outputs
-        if (!isonenumber && oper == '/' && y == 0)
+        if (!isonenumber && oper == '/' && y == 0 || oper == 't' && x == 90)
         {
-            cout << "You cant do that. Its undefined you fucking dumbarse\n\n";
+            cout << "\nYou cant do that. Its undefined you dumbarse\n\n";
             continue;
         }
         if (oper == '!' && x == 0)

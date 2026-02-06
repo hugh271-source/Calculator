@@ -1,15 +1,56 @@
 #include "Calc.h"
 
 const double PI = 3.14159265358979323846;
+double fakefabs(double v)
+{
+    return v < 0.0 ? -v : v;
+}
 
 //Square stuff
-double sqrthing(double base, int exp)
+double exponentwentowent(double x)
 {
-    double result = 1.0;
-    for (int i = 0; i < exp; i++)
-        result *= base;
-    return result;
+    double expsum = 1.0;
+    double expterm = 1.0;
+
+    for (int n = 1; n < 40; ++n)
+    {
+        expterm *= x / (double)n;
+        expsum += expterm;
+
+        if (fakefabs(expterm) < 1e-15)
+            break;
+    }
+
+    return expsum;
 }
+
+double doobiedoobiedoo(double x)
+{
+    if (x <= 0.0)
+        return 0.0;
+
+    double lntry = 1.0;
+
+    for (int i = 0; i < 30; ++i)
+    {
+        double eguess = exponentwentowent(lntry);
+        lntry = lntry - 1.0 + x / eguess;
+    }
+
+    return lntry;
+}
+
+double sqrthing(double a, double b)
+{
+    if (a <= 0.0)
+        return 0.0;
+
+    double lnpart = doobiedoobiedoo(a);
+    double expart = b * lnpart;
+
+    return exponentwentowent(expart);
+}
+
 
 //Root stuff
 double rootintootin(double x, double y)
@@ -29,12 +70,6 @@ double rootintootin(double x, double y)
     }
 
     return (rtlow + rthigh) / 2.0;
-}
-
-
-double fakefabs(double v)
-{
-    return v < 0.0 ? -v : v;
 }
 
 //Log stuff
@@ -161,7 +196,7 @@ double Calculator::Calculate(double x, char oper, double y)
         return cosywosy(x);
     case 't': // tan 
         return tanybany(x);
-    case 'l':
+    case 'l': // logarithms
         return logybogy(x, y);
     }
 }
