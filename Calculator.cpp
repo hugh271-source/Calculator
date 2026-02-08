@@ -1,7 +1,8 @@
 // Calculator Tutorial.cpp : This file contains the 'main' function. Program execution begins and ends there.
 
 //Things to do: fix the arrangement of trig functions and log to be normal,
-//Add algorithms to work out exact values of Pi and E
+//Add algorithms to work out exact values of Pi and e
+//Fix tokeniser: VERY BROKEN. Subtract and multiply (using x) without spaces including negative numbers and n, in the second slot (without spaces) and pi and e without spaces in the second slot and first slots.
 
 #include <iostream>
 #include <string>
@@ -13,87 +14,147 @@
 
 using namespace std;
 
+double parseValue(const string& token, double PI, double e, double lastResult, bool& ok)
+{
+    ok = true;
+    if (token.empty()) 
+    {
+        ok = false;
+        return 0.0;
+    }
+
+    bool neg = false;
+    string t = token;
+
+    if (t[0] == '-') 
+    {
+        neg = true;
+        t = t.substr(1);
+        if (t.empty()) 
+        {
+            ok = false;
+            return 0.0;
+        }
+    }
+
+    double value = 0.0;
+
+    if (t == "pi" || t == "Pi" || t == "PI") 
+    {
+        value = PI;
+    }
+    else if (t == "e")
+    {
+        value = e;
+    }
+    else if (t == "n" || t == "N") 
+    {
+        value = lastResult;
+    }
+    else 
+    {
+        stringstream ss(t);
+        if (!(ss >> value)) 
+        {
+            ok = false;
+            return 0.0;
+        }
+    }
+
+    if (neg) value = -value;
+    return value;
+}
+
 //Tokeniser block
-vector<string> tokenize(const string & input)
+vector<string> tokenize(const string& input)
 {
     vector<string> tokens;
-    string current;
+    size_t i = 0;
 
-    for (size_t i = 0; i < input.size(); ++i)
+    enum LastType { NONE, VALUE, OP };
+    LastType last = NONE;
+
+    auto isOpChar = [](char c) {
+        return c == '+' || c == '-' || c == '*' || c == 'x' || c == '/' ||
+            c == '^' || c == '%' || c == 'r' || c == 'l';
+        };
+
+    while (i < input.size())
     {
         char c = input[i];
 
-        if (isspace(c)) continue;
-        if (c == '-' && (i + 1 < input.size()) &&
-            (isdigit(input[i + 1]) || input[i + 1] == '.'))
-        {
-            current.clear();
-            current += c;
+        if (isspace(c)) {
             i++;
-
-            while (i < input.size() && (isdigit(input[i]) || input[i] == '.'))
-            {
-                current += input[i];
-                i++;
-            }
-            i--;
-            tokens.push_back(current);
             continue;
         }
 
-        if (isdigit(c) || c == '.')
+        bool canUnaryMinus = (c == '-' &&
+            (last == NONE || last == OP) &&
+            i + 1 < input.size());
+
+        if (canUnaryMinus && isdigit(input[i + 1]))
         {
-            current.clear();
-            while (i < input.size() && (isdigit(input[i]) || input[i] == '.'))
-            {
-                current += input[i];
-                i++;
+            string num = "-";
+            i++;
+            while (i < input.size() && (isdigit(input[i]) || input[i] == '.')) {
+                num += input[i++];
             }
-            i--;
-            tokens.push_back(current);
+            tokens.push_back(num);
+            last = VALUE;
+            continue;
+        }
+
+ 
+        if (canUnaryMinus && isalpha(input[i + 1]))
+        {
+            string id = "-";
+            i++;
+            while (i < input.size() && isalpha(input[i]) && !isOpChar(input[i])) {
+                id += input[i++];
+            }
+            tokens.push_back(id);
+            last = VALUE;
+            continue;
+        }
+
+        if (isdigit(c))
+        {
+            string num;
+            while (i < input.size() && (isdigit(input[i]) || input[i] == '.')) {
+                num += input[i++];
+            }
+            tokens.push_back(num);
+            last = VALUE;
+            continue;
+        }
+
+        if (isOpChar(c))
+        {
+            tokens.push_back(string(1, c));
+            i++;
+            last = OP;
             continue;
         }
 
         if (isalpha(c))
         {
-            current.clear();
-            current += c;
-            i++;
-
-            if (current == "p" && i < input.size() && input[i] == 'i')
-            {
-                current += 'i';
-                i++;
-                if (i < input.size() && isalpha(input[i]))
-                {
-                    tokens.push_back(current);
-                    i--;
-                    continue;
-                }
+            string id;
+            while (i < input.size() && isalpha(input[i]) && !isOpChar(input[i])) {
+                id += input[i++];
             }
-            if (current == "e")
-            {
-                if (i < input.size() && isalpha(input[i]))
-                {
-                    tokens.push_back(current);
-                    i--;
-                    continue;
-                }
-            }
-            while (i < input.size() && isalpha(input[i]))
-            {
-                current += input[i];
-                i++;
-            }
-            i--;
-            tokens.push_back(current);
+            tokens.push_back(id);
+            last = VALUE;
             continue;
         }
+
         tokens.push_back(string(1, c));
+        i++;
+        last = OP;
     }
 
     return tokens;
 }
+
 
 //Main
 int main()
@@ -144,30 +205,14 @@ int main()
 
             parsedOper = op[0];
 
-            if (first == "pi" || first == "Pi" || first == "PI") parsedX = PI;
-            else if (first == "e") parsedX = e;
-            else if (first == "n" || first == "N") parsedX = result;
-            else
-            {
-                stringstream ss(first);
-                if (!(ss >> parsedX))
-                {
-                    cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                    continue;
-                }
-            }
+            bool ok1 = false, ok2 = false;
+            parsedX = parseValue(first, PI, e, result, ok1);
+            parsedY = parseValue(second, PI, e, result, ok2);
 
-            if (second == "pi" || second == "Pi" || second == "PI") parsedY = PI;
-            else if (second == "e") parsedY = e;
-            else if (second == "n" || second == "N") parsedY = result;
-            else
+            if (!ok1 || !ok2)
             {
-                stringstream ss(second);
-                if (!(ss >> parsedY))
-                {
-                    cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                    continue;
-                }
+                cout << "\nTHATS NOT HOW IT WORKS\n\n";
+                continue;
             }
 
             x = parsedX;
@@ -175,26 +220,22 @@ int main()
             y = parsedY;
             isonenumber = false;
         }
+
         else if (tokens.size() == 2)
         {
             string first = tokens[0];
             string second = tokens[1];
 
-            if (second.size() == 1 && find(onenumber.begin(), onenumber.end(), second) != onenumber.end()) 
+            if (second.size() == 1 && find(onenumber.begin(), onenumber.end(), second) != onenumber.end())
             {
                 parsedOper = second[0];
 
-                if (first == "pi" || first == "Pi" || first == "PI") parsedX = PI;
-                else if (first == "e") parsedX = e;
-                else if (first == "n" || first == "N") parsedX = result;
-                else
+                bool ok1 = false;
+                parsedX = parseValue(first, PI, e, result, ok1);
+                if (!ok1)
                 {
-                    stringstream ss(first);
-                    if (!(ss >> parsedX)) 
-                    {
-                        cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                        continue;
-                    }
+                    cout << "\nTHATS NOT HOW IT WORKS\n\n";
+                    continue;
                 }
 
                 x = parsedX;
@@ -206,17 +247,12 @@ int main()
             {
                 parsedOper = first[0];
 
-                if (second == "pi" || second == "Pi" || second == "PI") parsedY = PI;
-                else if (second == "e") parsedY = e;
-                else if (second == "n" || second == "N") parsedY = result;
-                else
+                bool ok2 = false;
+                parsedY = parseValue(second, PI, e, result, ok2);
+                if (!ok2)
                 {
-                    stringstream ss(second);
-                    if (!(ss >> parsedY))
-                    {
-                        cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                        continue;
-                    }
+                    cout << "\nTHATS NOT HOW IT WORKS\n\n";
+                    continue;
                 }
 
                 x = result;
