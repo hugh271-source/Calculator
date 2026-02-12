@@ -88,16 +88,17 @@ vector<string> tokenize(const string& input)
     enum LastType { NONE, VALUE, OP };
     LastType last = NONE;
 
+    // removed 'l' from operator chars so 'log'/'log2' are parsed as identifiers
     auto isOpChar = [](char c) {
         return c == '+' || c == '-' || c == '*' || c == 'x' || c == '/' ||
-            c == '^' || c == '%' || c == 'r' || c == 'l';
-        };
+            c == '^' || c == '%' || c == 'r';
+    };
 
     while (i < input.size())
     {
         char c = input[i];
 
-        if (isspace(c)) {
+        if (isspace((unsigned char)c)) {
             i++;
             continue;
         }
@@ -106,11 +107,11 @@ vector<string> tokenize(const string& input)
             (last == NONE || last == OP) &&
             i + 1 < input.size());
 
-        if (canUnaryMinus && isdigit(input[i + 1]))
+        if (canUnaryMinus && isdigit((unsigned char)input[i + 1]))
         {
             string num = "-";
             i++;
-            while (i < input.size() && (isdigit(input[i]) || input[i] == '.')) 
+            while (i < input.size() && (isdigit((unsigned char)input[i]) || input[i] == '.'))
             {
                 num += input[i++];
             }
@@ -119,25 +120,24 @@ vector<string> tokenize(const string& input)
             continue;
         }
 
- 
-        if (canUnaryMinus && isalpha(input[i + 1]))
+        if (canUnaryMinus && isalpha((unsigned char)input[i + 1]))
         {
             string id = "-";
             i++;
-            while (i < input.size() && (isalnum(input[i])) && !isOpChar(input[i])) 
+            while (i < input.size() && (isalnum((unsigned char)input[i])) && !isOpChar(input[i]))
             {
                 id += input[i++];
             }
+            for (char &ch : id) ch = (char)tolower((unsigned char)ch);
             tokens.push_back(id);
             last = VALUE;
             continue;
         }
 
-
-        if (isdigit(c))
+        if (isdigit((unsigned char)c))
         {
             string num;
-            while (i < input.size() && (isdigit(input[i]) || input[i] == '.'))
+            while (i < input.size() && (isdigit((unsigned char)input[i]) || input[i] == '.'))
             {
                 num += input[i++];
             }
@@ -154,13 +154,41 @@ vector<string> tokenize(const string& input)
             continue;
         }
 
-        if (isalpha(c))
+        if (isalpha((unsigned char)c))
         {
             string id;
-            while (i < input.size() && isalpha(input[i]) && !isOpChar(input[i]))
-            {
+        
+            while (i < input.size() && (isalnum((unsigned char)input[i]) || input[i] == '.'))
                 id += input[i++];
+
+            for (char &ch : id) ch = (char)tolower((unsigned char)ch);
+
+            auto isDigitsOrDot = [](const string &s) {
+                if (s.empty()) return false;
+                for (char c : s) if (!(isdigit((unsigned char)c) || c == '.')) return false;
+                return true;
+            };
+
+            const string sinf = "sin";
+            const string cosf = "cos";
+            const string tanf = "tan";
+
+            if (id.size() > 3 && (id.substr(0,3) == sinf || id.substr(0,3) == cosf || id.substr(0,3) == tanf)) {
+                string func = id.substr(0,3);
+                string rest = id.substr(3);
+                if (isDigitsOrDot(rest)) {
+                    if (last == VALUE) tokens.push_back(string(1, '*'));
+                    tokens.push_back(func);
+                    tokens.push_back(rest);
+                    last = VALUE;
+                    continue;
+                }
             }
+
+            if (last == VALUE) {
+                tokens.push_back(string(1, '*'));
+            }
+
             tokens.push_back(id);
             last = VALUE;
             continue;
@@ -191,7 +219,6 @@ int main()
     cout << "Its Morbin time, and then he morbed all over the place\n\n";
     cout << "Normal maths. Add, subtract, multiply, divide, exponents, percents, roots, factorial, pi, e, assign variable values and more\n";
     cout << "You can take the previous answer either by typing the operation if its the first number, or by using n in the second\n\n";
-    cout << "soz, but trig is backwards (sin(30) is 30s), and log2(8) is 2l8\n\n";
     cout << "Type \"end\" to quit,\n\n";
 
     Calculator c;
@@ -212,7 +239,6 @@ int main()
         // Tokeniser
         // Tokeniser
         vector<string> tokens = tokenize(input);
-
         try
         {
             // 1) convert to RPN
@@ -233,6 +259,14 @@ int main()
         catch (const std::exception& ex)
         {
             cout << "\nTHATS NOT HOW IT WORKS (" << ex.what() << ")\n\n";
+            cout << "Tokens: ";
+            for (auto &t : tokens) cout << "[" << t << "] ";
+            cout << "\nRPN: ";
+            try {
+                vector<string> rpn = ReversedPoland(tokens);
+                for (auto &r : rpn) cout << "[" << r << "] ";
+            } catch (...) { cout << "(could not generate The Reversed Polands)"; }
+            cout << "\n\n";
         }
     }
 }

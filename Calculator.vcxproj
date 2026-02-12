@@ -131,6 +131,7 @@
     <ClCompile Include="ASTEval.cpp" />
     <ClCompile Include="Calc.cpp" />
     <ClCompile Include="Calculator.cpp" />
+    <ClCompile Include="cpp Calc.cpp" />
     <ClCompile Include="RPN.cpp" />
     <ClCompile Include="ShuntingYard.cpp" />
     <ClCompile Include="Tokeniser.cpp" />
