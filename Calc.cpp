@@ -1,11 +1,27 @@
 #include "Calc.h"
 
-const double PI = 3.14159265358979323846;
 double fakefabs(double v)
 {
     return v < 0.0 ? -v : v;
 }
 
+//factorial stuff
+double factodoobydoo(double x)
+{
+    if (x < 0.0)
+        return 0.0;
+
+    int n = (int)x;
+
+    if (n == 0 || n == 1)
+        return 1.0;
+
+    double result = 1.0;
+    for (int i = 2; i <= n; ++i)
+        result *= i;
+
+    return result;
+}
 //Square stuff
 double exponentwentowent(double x)
 {
@@ -17,7 +33,7 @@ double exponentwentowent(double x)
         expterm *= x / (double)n;
         expsum += expterm;
 
-        if (fakefabs(expterm) < 1e-15)
+        if (fakefabs(expterm) < 1e-10)
             break;
     }
 
@@ -72,6 +88,74 @@ double rootintootin(double x, double y)
     return (rtlow + rthigh) / 2.0;
 }
 
+double eulerboiler()
+{
+    double sum = 1.0;
+    double term = 1.0;
+    for (int n = 1; n < 100; ++n)
+    {
+        term /= (double)n;
+        sum += term;
+        if (fakefabs(term) < 1e-10)
+            break;
+    }
+    return sum;
+}
+
+//double arctanwithoutaplan(double x)
+//{
+//    double term = x;
+//    double sum = term;
+//    double x2 = x * x;
+//    const double reso = 1e-12;
+//
+//    for (int n = 1; n < 200; ++n)
+//    {
+//        term *= -x2;
+//        double add = term / (2 * n + 1);
+//        sum += add;
+//
+//        if (fakefabs(add) < reso)
+//            break;
+//    }
+//
+//    return sum;
+//}
+//double piinafly()
+//{
+//    double a = arctanwithoutaplan(1.0 / 5.0);
+//    double b = arctanwithoutaplan(1.0 / 239.0);
+//
+//    return 16.0 * a - 4.0 * b;
+//}
+
+
+double piinafly()
+{
+    double sum = 0.0;
+    int terms = 10;
+
+    for (int k = 0; k < terms; ++k)
+    {
+        double fourk = factodoobydoo(4 * k);
+        double kfact = factodoobydoo(k);
+
+        double kfact4 = kfact * kfact * kfact * kfact;
+
+        double pow396 = sqrthing(396, 4 * k);
+
+        double num = fourk * (1103 + 26390 * k);
+        double den = kfact4 * pow396;
+
+        sum += num / den;
+    }
+
+    double sqrt2 = rootintootin(2, 2);
+
+    double invpi = (2 * sqrt2 / 9801) * sum;
+    return 1 / invpi;
+}
+
 //Log stuff
 double logthingy(double a)
 {
@@ -88,7 +172,7 @@ double logthingy(double a)
         logterm *= logzthesequel;
         double logadd = logterm / (double)(2 * k + 1);
         logsum += logadd;
-        if (fakefabs(logadd) < 1e-15)
+        if (fakefabs(logadd) < 1e-10)
             break;
     }
 
@@ -109,22 +193,10 @@ double logybogy(double x, double y)
 }
 
 
-//factorial stuff
-double factodoobydoo(double x)
-{
-    double facto = x - 1;
-    while (facto > 1)
-    {
-        x *= facto;
-        facto -= 1;
-    }
-    return x;
-}
-
 //Trig stuff
 double sineywiney(double x)
 {
-    double rad = x * PI / 180.0;
+    double rad = x * piinafly() / 180.0;
     double sinthing = rad;
     double sinsum = sinthing;
     const double sinreso = 1e-12;
@@ -141,7 +213,7 @@ double sineywiney(double x)
 }
 double cosywosy(double x)
 {
-    double rad = x * PI / 180.0;
+    double rad = x * piinafly() / 180.0;
     double costhing = 1.0;
     double cossum = costhing;
     const double cosreso = 1e-12;
@@ -161,12 +233,11 @@ double tanybany(double x)
     double s = sineywiney(x);
     double c = cosywosy(x);
 
-    if (fakefabs(c) < 1e-15)
+    if (fakefabs(c) < 1e-12)
         return (c >= 0.0) ? 1e308 : -1e308;
 
     return s / c;
 }
-
 
 double Calculator::Calculate(double x, char oper, double y)
 

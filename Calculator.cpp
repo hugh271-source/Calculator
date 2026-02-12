@@ -1,8 +1,8 @@
 // Calculator Tutorial.cpp : This file contains the 'main' function. Program execution begins and ends there.
 
 //Things to do: fix the arrangement of trig functions and log to be normal,
-//Add algorithms to work out exact values of Pi and e
-//Fix tokeniser: VERY BROKEN. Subtract and multiply (using x) without spaces including negative numbers and n, in the second slot (without spaces) and pi and e without spaces in the second slot and first slots.
+//Add more than two number ability. things to work out. dooododododo
+
 
 #include <iostream>
 #include <string>
@@ -10,11 +10,16 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <map>
 #include "Calc.h"
 
 using namespace std;
 
-double parseValue(const string& token, double PI, double e, double lastResult, bool& ok)
+double parseValue(const string& token,
+    double PI, double e, double lastResult,
+    const map<string, double>& vars,
+    bool& ok)
+
 {
     ok = true;
     if (token.empty()) 
@@ -47,11 +52,15 @@ double parseValue(const string& token, double PI, double e, double lastResult, b
     {
         value = e;
     }
-    else if (t == "n" || t == "N") 
+    else if (t == "n" || t == "N")
     {
         value = lastResult;
     }
-    else 
+    else if (vars.count(t))
+    {
+        value = vars.at(t);
+    }
+    else
     {
         stringstream ss(t);
         if (!(ss >> value)) 
@@ -109,13 +118,15 @@ vector<string> tokenize(const string& input)
         {
             string id = "-";
             i++;
-            while (i < input.size() && isalpha(input[i]) && !isOpChar(input[i])) {
+            while (i < input.size() && (isalnum(input[i])) && !isOpChar(input[i])) 
+            {
                 id += input[i++];
             }
             tokens.push_back(id);
             last = VALUE;
             continue;
         }
+
 
         if (isdigit(c))
         {
@@ -155,12 +166,11 @@ vector<string> tokenize(const string& input)
     return tokens;
 }
 
-
 //Main
 int main()
 {
-    const double PI = 3.14159265358979323846;
-    const double e = 2.71828182845904523;
+    const double PI = piinafly();
+    const double e = eulerboiler();
     double x = 0.0;
     double y = 0.0;
     double result = 0.0;
@@ -174,10 +184,12 @@ int main()
     cout << "Normal maths. Add, subtract, multiply, divide, exponents, percents, roots, factorial, pi, e, and more\n";
     cout << "You can take the previous answer either by typing the operation if its the first number, or by using n in the second\n\n";
     cout << "soz, but trig is backwards (sin(30) is 30s), and log2(8) is 2l8\n\n";
-    cout << "Type \"end\" to quit\n\n";
+    cout << "Type \"end\" to quit,\n\n";
 
     Calculator c;
-    
+    map<string, double> vars;
+
+
     while (true)
     {
         cin >> ws;
@@ -189,8 +201,32 @@ int main()
             break;
         }
 
-        //Tokeniser
+        // Tokeniser
         vector<string> tokens = tokenize(input);
+
+        // Variable assignment: p = 9
+        if (tokens.size() == 3 && tokens[1] == "=")
+        {
+            bool ok = false;
+            double val = parseValue(tokens[2], PI, e, result, vars, ok);
+
+            if (!ok)
+            {
+                cout << "\nInvalid assignment\n\n";
+                continue;
+            }
+
+            if (!isalpha(tokens[0][0]))
+            {
+                cout << "\nInvalid variable name\n\n";
+                continue;
+            }
+
+            vars[tokens[0]] = val;
+
+            cout << "\nStored " << tokens[0] << " = " << val << "\n\n";
+            continue;
+        }
 
         double parsedX = 0.0;
         double parsedY = 0.0;
@@ -206,8 +242,8 @@ int main()
             parsedOper = op[0];
 
             bool ok1 = false, ok2 = false;
-            parsedX = parseValue(first, PI, e, result, ok1);
-            parsedY = parseValue(second, PI, e, result, ok2);
+            parsedX = parseValue(first, PI, e, result, vars, ok1);
+            parsedY = parseValue(second, PI, e, result, vars, ok2);
 
             if (!ok1 || !ok2)
             {
@@ -220,7 +256,6 @@ int main()
             y = parsedY;
             isonenumber = false;
         }
-
         else if (tokens.size() == 2)
         {
             string first = tokens[0];
@@ -231,7 +266,7 @@ int main()
                 parsedOper = second[0];
 
                 bool ok1 = false;
-                parsedX = parseValue(first, PI, e, result, ok1);
+                parsedX = parseValue(first, PI, e, result, vars, ok1);
                 if (!ok1)
                 {
                     cout << "\nTHATS NOT HOW IT WORKS\n\n";
@@ -248,7 +283,7 @@ int main()
                 parsedOper = first[0];
 
                 bool ok2 = false;
-                parsedY = parseValue(second, PI, e, result, ok2);
+                parsedY = parseValue(second, PI, e, result, vars, ok2);
                 if (!ok2)
                 {
                     cout << "\nTHATS NOT HOW IT WORKS\n\n";
@@ -271,7 +306,7 @@ int main()
             string op = tokens[0];
             if (op.size() == 1 && find(onenumber.begin(), onenumber.end(), op) != onenumber.end())
             {
-                x = result;  
+                x = result;
                 oper = op[0];
                 y = 0.0;
                 isonenumber = true;
@@ -288,42 +323,26 @@ int main()
             continue;
         }
 
-        //Outputs
+        result = c.Calculate(x, oper, y);
+
         if (!isonenumber && oper == '/' && y == 0 || oper == 't' && x == 90)
         {
             cout << "\nYou cant do that. Its undefined you dumbarse\n\n";
             continue;
         }
-        if (oper == '!' && x == 0)
-        {
-            result = 1;
-        }
-        else
-        {
-            result = c.Calculate(x, oper, y);
-        }
+
         if (isonenumber)
         {
             if (oper == 's')
-            {
-                cout << "\n" << "sin(" << x << ") = " << result << "\n\n";
-            }
+                cout << "\nsin(" << x << ") = " << result << "\n\n";
             else if (oper == 'c')
-            {
-                cout << "\n" << "cos(" << x << ") = " << result << "\n\n";
-            }
+                cout << "\ncos(" << x << ") = " << result << "\n\n";
             else if (oper == 't')
-            {
-                cout << "\n" << "tan(" << x << ") = " << result << "\n\n";
-            }
+                cout << "\ntan(" << x << ") = " << result << "\n\n";
             else if (oper == '!')
-            {
                 cout << "\n" << x << oper << " = " << result << "\n\n";
-            }
             else
-            {
                 cout << "\n" << x << " " << oper << " = " << result << "\n\n";
-            }
         }
         else if (oper == '%')
         {
@@ -331,7 +350,11 @@ int main()
         }
         else if (oper == 'l')
         {
-            cout << "\n" << "log" << x << "(" << y << ") = " << result << "\n\n";
+            cout << "\nlog" << x << "(" << y << ") = " << result << "\n\n";
+        }
+        else if (x == 51 && oper == '/' && y == 17)
+        {
+            cout << "\n" << result << " I don't like sand. It's course and rough and irritating and gets everywhere" "\n\n";
         }
         else
         {
