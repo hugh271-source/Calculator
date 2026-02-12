@@ -12,6 +12,11 @@
 #include <algorithm>
 #include <map>
 #include "Calc.h"
+#include "RPN.h"
+#include "AST.h"
+#include "ASTBuilder.h"
+#include "ASTEval.h"
+
 
 using namespace std;
 
@@ -105,7 +110,8 @@ vector<string> tokenize(const string& input)
         {
             string num = "-";
             i++;
-            while (i < input.size() && (isdigit(input[i]) || input[i] == '.')) {
+            while (i < input.size() && (isdigit(input[i]) || input[i] == '.')) 
+            {
                 num += input[i++];
             }
             tokens.push_back(num);
@@ -131,7 +137,8 @@ vector<string> tokenize(const string& input)
         if (isdigit(c))
         {
             string num;
-            while (i < input.size() && (isdigit(input[i]) || input[i] == '.')) {
+            while (i < input.size() && (isdigit(input[i]) || input[i] == '.'))
+            {
                 num += input[i++];
             }
             tokens.push_back(num);
@@ -150,7 +157,8 @@ vector<string> tokenize(const string& input)
         if (isalpha(c))
         {
             string id;
-            while (i < input.size() && isalpha(input[i]) && !isOpChar(input[i])) {
+            while (i < input.size() && isalpha(input[i]) && !isOpChar(input[i]))
+            {
                 id += input[i++];
             }
             tokens.push_back(id);
@@ -181,7 +189,7 @@ int main()
     list<string> twonumber = { "+", "-", "*", "x", "/", "^", "%", "r", "l" };
 
     cout << "Its Morbin time, and then he morbed all over the place\n\n";
-    cout << "Normal maths. Add, subtract, multiply, divide, exponents, percents, roots, factorial, pi, e, and more\n";
+    cout << "Normal maths. Add, subtract, multiply, divide, exponents, percents, roots, factorial, pi, e, assign variable values and more\n";
     cout << "You can take the previous answer either by typing the operation if its the first number, or by using n in the second\n\n";
     cout << "soz, but trig is backwards (sin(30) is 30s), and log2(8) is 2l8\n\n";
     cout << "Type \"end\" to quit,\n\n";
@@ -202,163 +210,29 @@ int main()
         }
 
         // Tokeniser
+        // Tokeniser
         vector<string> tokens = tokenize(input);
 
-        // Variable assignment: p = 9
-        if (tokens.size() == 3 && tokens[1] == "=")
+        try
         {
-            bool ok = false;
-            double val = parseValue(tokens[2], PI, e, result, vars, ok);
+            // 1) convert to RPN
+            vector<string> rpn = ReversedPoland(tokens);
 
-            if (!ok)
-            {
-                cout << "\nInvalid assignment\n\n";
-                continue;
-            }
+            // 2) build AST
+            ASTNode* root = AbstractTree(rpn);
 
-            if (!isalpha(tokens[0][0]))
-            {
-                cout << "\nInvalid variable name\n\n";
-                continue;
-            }
+            // 3) evaluate AST
+            double newResult = RealAbstractTree(root, c, PI, e, result, vars);
 
-            vars[tokens[0]] = val;
+            // 4) update last result
+            result = newResult;
 
-            cout << "\nStored " << tokens[0] << " = " << val << "\n\n";
-            continue;
+            cout << "\n" << input << " = " << result << "\n\n";
+
         }
-
-        double parsedX = 0.0;
-        double parsedY = 0.0;
-        char parsedOper = 0;
-        bool isonenumber = false;
-
-        if (tokens.size() == 3)
+        catch (const std::exception& ex)
         {
-            string first = tokens[0];
-            string op = tokens[1];
-            string second = tokens[2];
-
-            parsedOper = op[0];
-
-            bool ok1 = false, ok2 = false;
-            parsedX = parseValue(first, PI, e, result, vars, ok1);
-            parsedY = parseValue(second, PI, e, result, vars, ok2);
-
-            if (!ok1 || !ok2)
-            {
-                cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                continue;
-            }
-
-            x = parsedX;
-            oper = parsedOper;
-            y = parsedY;
-            isonenumber = false;
-        }
-        else if (tokens.size() == 2)
-        {
-            string first = tokens[0];
-            string second = tokens[1];
-
-            if (second.size() == 1 && find(onenumber.begin(), onenumber.end(), second) != onenumber.end())
-            {
-                parsedOper = second[0];
-
-                bool ok1 = false;
-                parsedX = parseValue(first, PI, e, result, vars, ok1);
-                if (!ok1)
-                {
-                    cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                    continue;
-                }
-
-                x = parsedX;
-                oper = parsedOper;
-                y = 0.0;
-                isonenumber = true;
-            }
-            else if (first.size() == 1 && find(twonumber.begin(), twonumber.end(), first) != twonumber.end())
-            {
-                parsedOper = first[0];
-
-                bool ok2 = false;
-                parsedY = parseValue(second, PI, e, result, vars, ok2);
-                if (!ok2)
-                {
-                    cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                    continue;
-                }
-
-                x = result;
-                oper = parsedOper;
-                y = parsedY;
-                isonenumber = false;
-            }
-            else
-            {
-                cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                continue;
-            }
-        }
-        else if (tokens.size() == 1)
-        {
-            string op = tokens[0];
-            if (op.size() == 1 && find(onenumber.begin(), onenumber.end(), op) != onenumber.end())
-            {
-                x = result;
-                oper = op[0];
-                y = 0.0;
-                isonenumber = true;
-            }
-            else
-            {
-                cout << "\nTHATS NOT HOW IT WORKS\n\n";
-                continue;
-            }
-        }
-        else
-        {
-            cout << "\nTHATS NOT HOW IT WORKS\n\n";
-            continue;
-        }
-
-        result = c.Calculate(x, oper, y);
-
-        if (!isonenumber && oper == '/' && y == 0 || oper == 't' && x == 90)
-        {
-            cout << "\nYou cant do that. Its undefined you dumbarse\n\n";
-            continue;
-        }
-
-        if (isonenumber)
-        {
-            if (oper == 's')
-                cout << "\nsin(" << x << ") = " << result << "\n\n";
-            else if (oper == 'c')
-                cout << "\ncos(" << x << ") = " << result << "\n\n";
-            else if (oper == 't')
-                cout << "\ntan(" << x << ") = " << result << "\n\n";
-            else if (oper == '!')
-                cout << "\n" << x << oper << " = " << result << "\n\n";
-            else
-                cout << "\n" << x << " " << oper << " = " << result << "\n\n";
-        }
-        else if (oper == '%')
-        {
-            cout << "\n" << x << oper << " of " << y << " = " << result << "\n\n";
-        }
-        else if (oper == 'l')
-        {
-            cout << "\nlog" << x << "(" << y << ") = " << result << "\n\n";
-        }
-        else if (x == 51 && oper == '/' && y == 17)
-        {
-            cout << "\n" << result << " I don't like sand. It's course and rough and irritating and gets everywhere" "\n\n";
-        }
-        else
-        {
-            cout << "\n" << x << " " << oper << " " << y << " = " << result << "\n\n";
+            cout << "\nTHATS NOT HOW IT WORKS (" << ex.what() << ")\n\n";
         }
     }
 }

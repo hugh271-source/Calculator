@@ -127,11 +127,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ASTBuilder.cpp" />
+    <ClCompile Include="ASTEval.cpp" />
     <ClCompile Include="Calc.cpp" />
     <ClCompile Include="Calculator.cpp" />
+    <ClCompile Include="RPN.cpp" />
+    <ClCompile Include="ShuntingYard.cpp" />
+    <ClCompile Include="Tokeniser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AST.h" />
+    <ClInclude Include="ASTBuilder.h" />
+    <ClInclude Include="ASTEval.h" />
     <ClInclude Include="Calc.h" />
+    <ClInclude Include="RPN.h" />
+    <ClInclude Include="ShuntingYard.h" />
+    <ClInclude Include="Token.h" />
+    <ClInclude Include="Tokeniser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

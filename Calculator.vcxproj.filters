@@ -21,9 +21,45 @@
     <ClCompile Include="Calc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tokeniser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShuntingYard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RPN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTEval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Calc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Token.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tokeniser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShuntingYard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AST.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RPN.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ASTBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ASTEval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

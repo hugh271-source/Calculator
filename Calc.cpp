@@ -264,18 +264,23 @@ double Calculator::Calculate(double x, char oper, double y)
     case '^': // to the power of
         return sqrthing(x, y);
     case 'r': // root
+    case 'R':
         return rootintootin(x, y);
     case '%': // percent of
         return x / 100.0 * y;
     case '!': // factorial
         return factodoobydoo(x);
     case 's': // sin 
+    case 'S':
         return sineywiney(x);
     case 'c': // cos 
+    case 'C':
         return cosywosy(x);
     case 't': // tan 
+    case 'T':
         return tanybany(x);
     case 'l': // logarithms
+    case 'L':
         return logybogy(x, y);
     }
 }
