@@ -58,13 +58,21 @@ double doobiedoobiedoo(double x)
 
 double sqrthing(double a, double b)
 {
-    if (a <= 0.0)
-        return 0.0;
-
-    double lnpart = doobiedoobiedoo(a);
-    double expart = b * lnpart;
-
-    return exponentwentowent(expart);
+    if (a < 0.0)
+    {
+        a *= -1;
+        double lnpart = doobiedoobiedoo(a);
+        double expart = b * lnpart;
+        return exponentwentowent(expart);
+    }
+    else if (b == 0)
+        return 1;
+    else
+    {
+        double lnpart = doobiedoobiedoo(a);
+        double expart = b * lnpart;
+        return exponentwentowent(expart);
+    }
 }
 
 
